@@ -50,7 +50,7 @@ jobs:
       - name: Start container
         working-directory: ./setup-trial-docker-compose
         run: |
-          docker compose up -d
+          docker compose up -d -p action-test
 
       - name: Wait until site is ready (max 5 min)
         run: |
@@ -60,7 +60,7 @@ jobs:
             if [ "$elapsed" -ge "$timeout" ]; then
               echo "Timed out after ${timeout}s waiting for port 8000"
               docker ps -a
-              docker logs fp-main-1
+              docker logs action-test-fp-main-1
               exit 1
             fi
             sleep 5
@@ -68,7 +68,7 @@ jobs:
             echo "Waiting... ${elapsed}s elapsed"
           done
           docker ps -a
-          docker logs fp-main-1
+          docker logs action-test-fp-main-1
           echo "Site is up after ${elapsed}s"
 
       - name: Check HTTP Response
@@ -83,7 +83,7 @@ jobs:
 
       - name: Getting app version from image
         run: |
-          docker exec fp-main-1 bench version > version.txt
+          docker exec action-test-fp-main-1 bench version > version.txt
 
       - name: Formatting and set version variable
         run: python ./scripts/tag_image.py

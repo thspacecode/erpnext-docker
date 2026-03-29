@@ -16,6 +16,13 @@ services:
     ports:
       - "8000:8000"
       - "9000:9000"
+    depends_on:
+      fp-database:
+        condition: service_healthy
+      fp-redis-cache:
+        condition: service_healthy
+      fp-redis-queue:
+        condition: service_healthy
 
   fp-mariadb:
     image: mariadb:11.8
@@ -30,11 +37,23 @@ services:
       - mariadb-data:/var/lib/mysql
     networks:
       - frappe_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   fp-redis-cache:
     image: redis:alpine
     networks:
       - frappe_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping_test"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   fp-redis-queue:
     image: redis:alpine
@@ -42,6 +61,12 @@ services:
       - redis-queue-data:/data
     networks:
       - frappe_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping_test"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
 volumes:
   frappe-sites-data:
