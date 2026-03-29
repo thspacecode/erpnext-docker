@@ -19,9 +19,6 @@ jobs:
       matrix:
         app_branch: ["version-16"]
     steps:
-      - name: Generate action image action tag
-        run: echo "IMAGE_ACTION_TAG=${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ github.actor_id }}" >> $GITHUB_ENV
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -49,17 +46,33 @@ jobs:
           build-args: |
             APP_BRANCH=${{ matrix.app_branch }}
 
+      - name: Pull docker compose image
+        run: |
+          docker compose pull
+
       - name: Start container
         working-directory: setup-trial-docker-compose
         run: |
           docker compose up -d
 
-      - name: Wait for 2 minutes and check status
+      - name: Wait until site is ready (max 5 min)
         run: |
-          sleep 180s
+          timeout=300
+          elapsed=0
+          until curl -sf -o /dev/null http://127.0.0.1:8000; do
+            if [ "$elapsed" -ge "$timeout" ]; then
+              echo "Timed out after ${timeout}s waiting for port 8000"
+              docker ps -a
+              docker logs fp-main-1
+              exit 1
+            fi
+            sleep 5
+            elapsed=$((elapsed + 5))
+            echo "Waiting... ${elapsed}s elapsed"
+          done
           docker ps -a
-          docker logs TEST_CONTAINER
-          docker inspect TEST_CONTAINER
+          docker logs fp-main-1
+          echo "Site is up after ${elapsed}s"
 
       - name: Check HTTP Response
         run: |
@@ -73,14 +86,14 @@ jobs:
 
       - name: Getting app version from image
         run: |
-          docker exec TEST_CONTAINER bench version > version.txt
+          docker exec fp-main-1 bench version > version.txt
 
       - name: Formatting and set version variable
         run: python ./scripts/tag_image.py
 
+
       - name: Tag and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION_TAG }},${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest
+        run: |
+          docker tag ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION_TAG }}
+          docker push ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION_TAG }}
+          docker push ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest
