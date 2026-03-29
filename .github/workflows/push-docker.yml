@@ -43,6 +43,7 @@ jobs:
           context: "{{defaultContext}}:dockerfile-bundled"
           tags: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest
           push: false
+          load: true
           build-args: |
             APP_BRANCH=${{ matrix.app_branch }}
 
