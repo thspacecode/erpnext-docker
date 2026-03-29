@@ -47,11 +47,6 @@ jobs:
           build-args: |
             APP_BRANCH=${{ matrix.app_branch }}
 
-      - name: Pull docker compose image
-        working-directory: ./setup-trial-docker-compose
-        run: |
-          docker compose pull
-
       - name: Start container
         working-directory: ./setup-trial-docker-compose
         run: |
