@@ -1,0 +1,86 @@
+name: build-tag-push
+
+on:
+  schedule:
+    # At 00:00 on Sunday.
+    - cron: "0 0 * * 0"
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_REPO: thspacecode
+  IMAGE_NAME: erpnext-docker
+
+jobs:
+  build-tag-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app_branch: ["version-16"]
+    steps:
+      - name: Generate action image action tag
+        run: echo "IMAGE_ACTION_TAG=${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ github.actor_id }}" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v7
+        with:
+          context: "{{defaultContext}}:dockerfile-bundled"
+          tags: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest
+          push: false
+          build-args: |
+            APP_BRANCH=${{ matrix.app_branch }}
+
+      - name: Start container
+        working-directory: setup-trial-docker-compose
+        run: |
+          docker compose up -d
+
+      - name: Wait for 2 minutes and check status
+        run: |
+          sleep 180s
+          docker ps -a
+          docker logs TEST_CONTAINER
+          docker inspect TEST_CONTAINER
+
+      - name: Check HTTP Response
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000)
+          if [ "$response" == 200 ]; then
+            echo "Received a 200 response!"
+          else
+            echo "Failed to receive a 200 response, got: $response"
+            exit 1
+          fi
+
+      - name: Getting app version from image
+        run: |
+          docker exec TEST_CONTAINER bench version > version.txt
+
+      - name: Formatting and set version variable
+        run: python ./scripts/tag_image.py
+
+      - name: Tag and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION_TAG }},${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest
