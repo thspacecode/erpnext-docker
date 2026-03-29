@@ -41,6 +41,9 @@ def get_app_version(apps_version):
     e = apps_version['erpnext'].split('.')
     f = apps_version['frappe'].split('.')
 
+    if len(f) < 3 or len(e) < 3:
+        raise ValueError(f"Expected x.y.z version format. Got frappe={apps_version['frappe']}, erpnext={apps_version['erpnext']}")
+
     # construct version tag
     # 12-F10.1_E14.3
     version = '{major}-F{frappe_minor}.{frappe_patch}_E{erpnext_minor}.{erpnext_patch}'.format(

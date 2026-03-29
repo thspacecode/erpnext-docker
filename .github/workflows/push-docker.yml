@@ -86,8 +86,7 @@ jobs:
           docker exec action-test-fp-main-1 bench version > version.txt
 
       - name: Formatting and set version variable
-        run: python ./scripts/tag_image.py
-
+        run: python ./.github/workflows/scripts/tag_image.py
 
       - name: Tag and push
         run: |
