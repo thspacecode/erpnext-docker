@@ -50,7 +50,7 @@ jobs:
       - name: Start container
         working-directory: ./setup-trial-docker-compose
         run: |
-          docker compose up -d -p action-test
+          docker compose -p action-test up -d
 
       - name: Wait until site is ready (max 5 min)
         run: |
