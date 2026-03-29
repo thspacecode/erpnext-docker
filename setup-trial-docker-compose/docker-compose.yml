@@ -17,7 +17,7 @@ services:
       - "8000:8000"
       - "9000:9000"
     depends_on:
-      fp-database:
+      fp-mariadb:
         condition: service_healthy
       fp-redis-cache:
         condition: service_healthy
