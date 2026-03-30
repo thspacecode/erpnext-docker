@@ -17,14 +17,14 @@ services:
       - "8000:8000"
       - "9000:9000"
     depends_on:
-      fp-mariadb:
+      fp-database:
         condition: service_healthy
       fp-redis-cache:
         condition: service_healthy
       fp-redis-queue:
         condition: service_healthy
 
-  fp-mariadb:
+  fp-database:
     image: mariadb:11.8
     command:
       - --character-set-server=utf8mb4
