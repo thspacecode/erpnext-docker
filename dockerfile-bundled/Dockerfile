@@ -49,14 +49,14 @@ ARG ERPNEXT_BRANCH=version-16
 USER frappe
 
 RUN bench init \
-    --frappe-branch=${APP_BRANCH} \
+    --frappe-branch=${FRAPPE_BRANCH} \
     --frappe-path=${FRAPPE_REPO} \
     --no-backups \
     --skip-redis-config-generation \
     --verbose \
     /home/frappe/frappe-bench && \
     cd /home/frappe/frappe-bench && \
-    bench get-app --branch=${APP_BRANCH} --resolve-deps erpnext ${ERPNEXT_REPO} && \
+    bench get-app --branch=${ERPNEXT_BRANCH} --resolve-deps erpnext ${ERPNEXT_REPO} && \
     echo "{}" > sites/common_site_config.json
 
 ###############################################
