@@ -8,6 +8,8 @@ FROM frappe/build:version-16
 # Adding Dependencies
 ###############################################
 
+USER root
+
 RUN apt-get update \
     && apt-get install -y -q \
     # [fix] "debconf: delaying package configuration, since apt-utils is not installed"
