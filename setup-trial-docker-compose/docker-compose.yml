@@ -9,7 +9,7 @@ services:
     environment:
       - FRAPPE_REDIS_CACHE=redis://fp-redis-cache:6379
       - FRAPPE_REDIS_QUEUE=redis://fp-redis-queue:6379
-      - FRAPPE_DB_HOST=fp-mariadb
+      - FRAPPE_DB_HOST=fp-database
       - FRAPPE_DB_PORT=3306
     networks:
       - frappe_network
