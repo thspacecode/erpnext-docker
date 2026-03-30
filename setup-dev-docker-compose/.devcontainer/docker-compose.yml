@@ -1,0 +1,74 @@
+services:
+  fp-main:
+    image: thspacecode/erpnext-docker:version-16-latest
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    environment:
+      - FRAPPE_REDIS_CACHE=redis://fp-redis-cache:6379
+      - FRAPPE_REDIS_QUEUE=redis://fp-redis-queue:6379
+      - FRAPPE_DB_HOST=fp-mariadb
+      - FRAPPE_DB_PORT=3306
+    networks:
+      - frappe_network
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    depends_on:
+      fp-mariadb:
+        condition: service_healthy
+      fp-redis-cache:
+        condition: service_healthy
+      fp-redis-queue:
+        condition: service_healthy
+
+  fp-mariadb:
+    image: mariadb:11.8
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks:
+      - frappe_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  fp-redis-cache:
+    image: redis:alpine
+    networks:
+      - frappe_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping_test"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  fp-redis-queue:
+    image: redis:alpine
+    volumes:
+      - redis-queue-data:/data
+    networks:
+      - frappe_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping_test"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mariadb-data:
+  redis-queue-data:
+
+networks:
+  frappe_network:
