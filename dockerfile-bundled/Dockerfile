@@ -2,20 +2,11 @@
 # Base Image
 ###############################################
 
-# https://github.com/frappe/frappe_docker/blob/main/images/production/Containerfile
-# -
-# `frappe/base` is built from `python:slim-bookworm` (debian)
-# default USER in this image is frappe.
-
-FROM frappe/base:version-16
+FROM frappe/build:version-16
 
 ###############################################
 # Adding Dependencies
 ###############################################
-
-ARG APP_BRANCH=version-16
-ARG FRAPPE_REPO=https://github.com/frappe/frappe
-ARG ERPNEXT_REPO=https://github.com/frappe/erpnext
 
 RUN apt-get update \
     && apt-get install -y -q \
@@ -29,33 +20,6 @@ RUN apt-get update \
     ###############################################
     && apt-get install -y -q sudo \
     && echo "frappe ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
-    ###############################################
-    # add bench dependencies (these are needed to run bench init, which compiles some Python packages)
-    # (copied from build image of `frappe/base` image)
-    # https://github.com/frappe/frappe_docker/blob/d1289a860493df9726938535f5e26088e4f83496/images/production/Containerfile#L82-L105
-    ###############################################
-    && apt-get install -y -q \
-    # For frappe framework
-    wget \
-    # For psycopg2
-    libpq-dev \
-    # Other
-    libffi-dev \
-    liblcms2-dev \
-    libldap2-dev \
-    libmariadb-dev \
-    libsasl2-dev \
-    libtiff5-dev \
-    libwebp-dev \
-    pkg-config \
-    redis-tools \
-    rlwrap \
-    tk8.6-dev \
-    cron \
-    # For pandas
-    gcc \
-    build-essential \
-    libbz2-dev \
     ###############################################
     # add supervisor
     ###############################################
@@ -71,9 +35,14 @@ RUN apt-get update \
 
 ###############################################
 # Init Bench (run as frappe user — bench creates files in /home/frappe)
-# (copied from bench init section of `frappe/base` image)
+# (copied from builder section of production image)
 # https://github.com/frappe/frappe_docker/blob/d1289a860493df9726938535f5e26088e4f83496/images/production/Containerfile#L115-L126
 ###############################################
+
+ARG FRAPPE_REPO=https://github.com/frappe/frappe
+ARG FRAPPE_BRANCH=version-16
+ARG ERPNEXT_REPO=https://github.com/frappe/erpnext
+ARG ERPNEXT_BRANCH=version-16
 
 USER frappe
 
