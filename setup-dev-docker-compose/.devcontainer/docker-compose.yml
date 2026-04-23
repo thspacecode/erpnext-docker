@@ -3,6 +3,7 @@ services:
     image: thspacecode/erpnext-docker:version-16-latest
     volumes:
       - ..:/workspace:cached
+    working_dir: /workspace/frappe-bench
     command: sleep infinity
     environment:
       - FRAPPE_REDIS_CACHE=redis://fp-redis-cache:6379
