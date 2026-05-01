@@ -14,6 +14,8 @@ Open Command Palette (`Ctrl + Shift + P`) and run `Dev Containers: Open Folder i
 
 **2. Initialize bench**
 
+Open terminal your path should be on `/workspace/frappe-bench`
+
 ```bash
 ../.devcontainer/init-bench.sh
 ```

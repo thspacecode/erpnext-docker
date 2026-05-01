@@ -7,19 +7,37 @@
 
 ## Setup
 
-**1. Start**
+**1. Change directory**
+
+```bash
+cd setup-trial-docker-compose
+```
+
+**2. Start**
 
 ```bash
 docker compose up
 ```
 
-Site is available at `http://localhost:8000` once setup is complete.
+The first run downloads the image, creates a new site, and installs apps - this may take up to 10 minutes.
 
-**2. Stop and remove**
+Wait for:
 
-```bash
-docker compose down -v
 ```
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+Running on all addresses (0.0.0.0)
+Running on http://127.0.0.1:8000
+```
+
+Site is then available at `http://localhost:8000`.
+
+Default credentials: username `Administrator`, password `12345`.
+
+**3. Managing**
+
+- To stop: `Ctrl + C` or `docker compose down`
+- To start again: `docker compose up`
+- To remove: `docker compose down -v`
 
 ## Notes
 
