@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e
+
+_require_var() {
+    if [ -z "${!1}" ]; then
+        echo "ERROR: $1 is not set" >&2
+        exit 1
+    fi
+}
+
+_require_var RFP_DOMAIN_NAME
+_require_var RFP_SITE_ADMIN_PASSWORD
+_require_var RFP_DB_ROOT_PASSWORD
+
+SITES_DIR="/home/frappe/bench/sites"
+
+if [ -d "${SITES_DIR}/${RFP_DOMAIN_NAME}" ]; then
+    echo "-> Site ${RFP_DOMAIN_NAME} already exists, skipping setup"
+    exit 0
+fi
+
+echo "-> Create empty common site config"
+echo "{}" > "${SITES_DIR}/common_site_config.json"
+
+echo "-> Create new site with ERPNext"
+bench new-site ${RFP_DOMAIN_NAME} --admin-password ${RFP_SITE_ADMIN_PASSWORD} --no-mariadb-socket --db-root-password ${RFP_DB_ROOT_PASSWORD} --install-app erpnext
+bench use ${RFP_DOMAIN_NAME}
+
+echo "-> Enable scheduler"
+bench enable-scheduler
