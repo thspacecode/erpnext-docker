@@ -1,5 +1,6 @@
 ###############################################
-# Base Image
+# More info on base image visit:
+# https://spacecode.co.th/knowledge-base/p/erpnext-docker
 ###############################################
 
 FROM frappe/build:version-16
@@ -11,42 +12,31 @@ FROM frappe/build:version-16
 USER root
 
 RUN apt-get update \
-    && apt-get install -y -q \
-    # [fix] "debconf: delaying package configuration, since apt-utils is not installed"
-    apt-utils \
-    # [fix] "debconf: unable to initialize frontend: Dialog"
-    # https://github.com/moby/moby/issues/27988
-    && echo "debconf debconf/frontend select Noninteractive" | debconf-set-selections \
-    ###############################################
-    # add sudo
-    ###############################################
-    && apt-get install -y -q sudo \
+    # [Hotfix]: https://github.com/moby/moby/issues/27988
+    && DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y -q \
+    # Adding sudo
+    sudo \
     && echo "frappe ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
-    ###############################################
-    # add supervisor
-    ###############################################
-    && apt-get install -y -q \
-    supervisor \
-    ###############################################
-    # clean-up
-    ###############################################
+    # Cleanup install
     && apt-get autoremove --purge -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/*
 
 ###############################################
-# Init Bench (run as frappe user — bench creates files in /home/frappe)
+# Init Bench
+# - 
 # (copied from builder section of production image)
 # https://github.com/frappe/frappe_docker/blob/d1289a860493df9726938535f5e26088e4f83496/images/production/Containerfile#L115-L126
 ###############################################
+
+USER frappe
 
 ARG FRAPPE_REPO=https://github.com/frappe/frappe
 ARG FRAPPE_BRANCH=version-16
 ARG ERPNEXT_REPO=https://github.com/frappe/erpnext
 ARG ERPNEXT_BRANCH=version-16
-
-USER frappe
 
 RUN bench init \
     --frappe-branch=${FRAPPE_BRANCH} \
@@ -60,7 +50,7 @@ RUN bench init \
     echo "{}" > sites/common_site_config.json
 
 ###############################################
-# COPY cmd
+# COPY FILES
 ###############################################
 
 COPY --chown=frappe:frappe --chmod=0755 ./cmd /home/frappe/frappe-bench/cmd
@@ -70,3 +60,4 @@ COPY --chown=frappe:frappe --chmod=0755 ./cmd /home/frappe/frappe-bench/cmd
 ###############################################
 
 WORKDIR /home/frappe/frappe-bench
+USER frappe
