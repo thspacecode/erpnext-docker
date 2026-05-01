@@ -16,9 +16,14 @@ fi
 echo "-> Clearing cache"
 su frappe -c "bench execute frappe.cache_manager.clear_global_cache"
 
+echo "-> Resolving binary paths"
+BENCH_BIN=$(su frappe -c "which bench")
+NODE_BIN=$(su frappe -c "which node")
+export BENCH_BIN NODE_BIN
+
 echo "-> Bursting env into config"
 envsubst '$RFP_DOMAIN_NAME' < /home/frappe/temp_nginx.conf > /etc/nginx/conf.d/default.conf
-envsubst '$PATH,$HOME' < /home/frappe/temp_supervisor.conf > /home/frappe/supervisor.conf
+envsubst '$BENCH_BIN,$NODE_BIN' < /home/frappe/temp_supervisor.conf > /home/frappe/supervisor.conf
 
 echo "-> Starting nginx"
 nginx
