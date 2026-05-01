@@ -28,6 +28,13 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/*
 
+# copy built_sites from sites
+RUN mkdir -p /home/frappe/frappe-bench/built_sites \
+    && cp -r /home/frappe/frappe-bench/sites/assets /home/frappe/frappe-bench/built_sites/assets \
+    && cp /home/frappe/frappe-bench/sites/apps.json /home/frappe/frappe-bench/built_sites/apps.json \
+    && cp /home/frappe/frappe-bench/sites/apps.txt /home/frappe/frappe-bench/built_sites/apps.txt \
+    && chown -R frappe:frappe /home/frappe/frappe-bench/built_sites
+
 # copy template
 COPY ./template/temp_nginx.conf /home/frappe/temp_nginx.conf
 COPY ./template/temp_supervisor.conf /home/frappe/temp_supervisor.conf
