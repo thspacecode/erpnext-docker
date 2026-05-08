@@ -28,7 +28,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/*
 
+# build assets
+USER frappe
+RUN cd /home/frappe/frappe-bench && bench build --production
+
 # copy built_sites from sites
+USER root
 RUN mkdir -p /home/frappe/frappe-bench/built_sites \
     && cp -r /home/frappe/frappe-bench/sites/assets /home/frappe/frappe-bench/built_sites/assets \
     && cp /home/frappe/frappe-bench/sites/apps.json /home/frappe/frappe-bench/built_sites/apps.json \
