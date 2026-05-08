@@ -24,6 +24,7 @@ su frappe -c "echo '{}' > \"${SITES_DIR}/common_site_config.json\""
 
 echo "-> Create new site with ERPNext"
 su frappe -c "bench new-site ${RFP_DOMAIN_NAME} --admin-password ${RFP_SITE_ADMIN_PASSWORD} --no-mariadb-socket --db-root-password ${FRAPPE_DB_PASSWORD} --install-app erpnext"
+su frappe -c "bench build"
 su frappe -c "bench use ${RFP_DOMAIN_NAME}"
 
 echo "-> Enable scheduler"
