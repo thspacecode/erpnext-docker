@@ -24,6 +24,7 @@ su frappe -c "echo '{}' > \"${SITES_DIR}/common_site_config.json\""
 
 echo "-> Create new site with ERPNext"
 su frappe -c "bench new-site ${RFP_DOMAIN_NAME} --admin-password ${RFP_SITE_ADMIN_PASSWORD} --no-mariadb-socket --db-root-password ${FRAPPE_DB_PASSWORD} --install-app erpnext"
+su frappe -c "bench set-config socketio_port 9000"
 su frappe -c "bench get-app hrms https://github.com/frappe/hrms"
 su frappe -c "bench install-app hrms --site ${RFP_DOMAIN_NAME}"
 su frappe -c "bench use ${RFP_DOMAIN_NAME}"
