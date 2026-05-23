@@ -14,7 +14,7 @@ if [ ! -f "$SITE_CONFIG" ]; then
 fi
 
 echo "-> Clearing cache"
-su frappe -c "bench execute frappe.cache_manager.clear_global_cache --site ${RFP_DOMAIN_NAME}"
+su frappe -c "cd /home/frappe/frappe-bench && bench execute frappe.cache_manager.clear_global_cache -s ${RFP_DOMAIN_NAME}"
 
 echo "-> Resolving paths"
 BENCH_PATH=$(su frappe -c "which bench")
