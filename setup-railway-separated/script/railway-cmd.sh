@@ -11,6 +11,10 @@ SITE_CONFIG="/home/frappe/frappe-bench/sites/${RFP_DOMAIN_NAME}/site_config.json
 if [ ! -f "$SITE_CONFIG" ]; then
     echo "-> Site config not found, running setup"
     /home/frappe/frappe-bench/railway-setup.sh
+else
+    echo "-> Site already exists, ensuring HRMS is installed"
+    su frappe -c "bench get-app hrms https://github.com/frappe/hrms" 2>&1 || echo "HRMS app already exists or fetch failed"
+    su frappe -c "bench --site ${RFP_DOMAIN_NAME} install-app hrms" 2>&1 || echo "HRMS installation completed or already installed"
 fi
 
 echo "-> Clearing cache"
