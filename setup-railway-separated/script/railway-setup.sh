@@ -22,7 +22,7 @@ else
 
     echo "-> Create new site with ERPNext"
     su frappe -c "bench new-site ${RFP_DOMAIN_NAME} --admin-password ${RFP_SITE_ADMIN_PASSWORD} --no-mariadb-socket --db-root-password ${FRAPPE_DB_PASSWORD} --install-app erpnext"
-    su frappe -c "bench set-config socketio_port 9000"
+    su frappe -c "bench --site ${RFP_DOMAIN_NAME} set-config socketio_port 9000"
     su frappe -c "bench use ${RFP_DOMAIN_NAME}"
 
     echo "-> Enable scheduler"
