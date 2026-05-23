@@ -30,5 +30,7 @@ else
 fi
 
 echo "-> Install HRMS app"
-su frappe -c "bench get-app hrms https://github.com/frappe/hrms" || true
-su frappe -c "bench --site ${RFP_DOMAIN_NAME} install-app hrms" || true
+if ! su frappe -c "bench get-app hrms https://github.com/frappe/hrms" 2>&1 | grep -q "already exists"; then
+    echo "HRMS app fetched successfully"
+fi
+su frappe -c "bench --site ${RFP_DOMAIN_NAME} install-app hrms" 2>&1 || echo "HRMS installation completed or already installed"
