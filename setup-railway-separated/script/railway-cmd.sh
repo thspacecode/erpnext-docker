@@ -13,7 +13,7 @@ if [ ! -f "$SITE_CONFIG" ]; then
     /home/frappe/frappe-bench/railway-setup.sh
 else
     echo "-> Site already exists, ensuring HRMS is installed"
-    su frappe -c "bench get-app hrms https://github.com/frappe/hrms" 2>&1 || echo "HRMS app already exists or fetch failed"
+    su frappe -c "bench get-app hrms https://github.com/frappe/hrms --branch version-16" 2>&1 || echo "HRMS app already exists or fetch failed"
     su frappe -c "bench --site ${RFP_DOMAIN_NAME} install-app hrms" 2>&1 || echo "HRMS installation completed or already installed"
 fi
 
