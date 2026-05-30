@@ -11,6 +11,7 @@ require_var() {
 require_var RFP_DOMAIN_NAME
 require_var RFP_SITE_ADMIN_PASSWORD
 require_var FRAPPE_DB_PASSWORD
+require_var FRAPPE_DB_HOST
 
 SITES_DIR="/home/frappe/frappe-bench/sites"
 
@@ -38,7 +39,7 @@ is_site_initialized() {
     # Verify the database actually has Frappe's core table.
     # Uses the MariaDB root password so this works even when the
     # per-site DB user was not yet created (e.g. partial setup).
-    if mysql -h "${DB_HOST:-mariadb}" -P "${DB_PORT:-3306}" \
+    if mysql -h "${FRAPPE_DB_HOST}" -P "${FRAPPE_DB_PORT:-3306}" \
              -u root -p"${FRAPPE_DB_PASSWORD}" \
              --connect-timeout=10 --silent --skip-column-names \
              -e "SELECT 1 FROM information_schema.tables
@@ -94,3 +95,4 @@ chown frappe:frappe "${PATCH_SCRIPT}"
 su frappe -c "cd /home/frappe/frappe-bench && bench --site ${RFP_DOMAIN_NAME} execute-script ${PATCH_SCRIPT}" 2>&1 || \
     echo "Warning: Could not disable create_user_automatically; employees may trigger a broken welcome email on save"
 rm -f "${PATCH_SCRIPT}"
+

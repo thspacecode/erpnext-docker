@@ -6,6 +6,11 @@ if [ -z "$RFP_DOMAIN_NAME" ]; then
     exit 1
 fi
 
+if [ -z "$FRAPPE_DB_HOST" ]; then
+    echo "ERROR: FRAPPE_DB_HOST is not set" >&2
+    exit 1
+fi
+
 SITES_DIR="/home/frappe/frappe-bench/sites"
 
 # Frappe derives the database name from the site name by replacing
@@ -26,7 +31,7 @@ is_site_initialized() {
         return 1
     fi
 
-    if mysql -h "${DB_HOST:-mariadb}" -P "${DB_PORT:-3306}" \
+    if mysql -h "${FRAPPE_DB_HOST}" -P "${FRAPPE_DB_PORT:-3306}" \
              -u root -p"${FRAPPE_DB_PASSWORD}" \
              --connect-timeout=10 --silent --skip-column-names \
              -e "SELECT 1 FROM information_schema.tables
@@ -66,3 +71,4 @@ nginx
 
 echo "-> Starting supervisor"
 /usr/bin/supervisord -c /home/frappe/supervisor.conf
+
