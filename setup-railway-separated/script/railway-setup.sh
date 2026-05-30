@@ -14,8 +14,46 @@ require_var FRAPPE_DB_PASSWORD
 
 SITES_DIR="/home/frappe/frappe-bench/sites"
 
-if [ -d "${SITES_DIR}/${RFP_DOMAIN_NAME}" ]; then
-    echo "-> Site ${RFP_DOMAIN_NAME} already exists, skipping site creation"
+# Frappe derives the database name from the site name by replacing
+# hyphens and dots with underscores.
+_db_name() {
+    echo "${RFP_DOMAIN_NAME}" | tr '.-' '_'
+}
+
+# Returns 0 (true) if the site is fully initialized:
+#   1. The site directory exists
+#   2. site_config.json is present
+#   3. The MariaDB database exists and contains the tabDocType table,
+#      confirming that `bench new-site` completed successfully.
+is_site_initialized() {
+    local site_config="${SITES_DIR}/${RFP_DOMAIN_NAME}/site_config.json"
+    local db_name
+    db_name=$(_db_name)
+
+    # Fast-path: directory or config missing → not initialized
+    if [ ! -d "${SITES_DIR}/${RFP_DOMAIN_NAME}" ] || [ ! -f "${site_config}" ]; then
+        return 1
+    fi
+
+    # Verify the database actually has Frappe's core table.
+    # Uses the MariaDB root password so this works even when the
+    # per-site DB user was not yet created (e.g. partial setup).
+    if mysql -h "${DB_HOST:-mariadb}" -P "${DB_PORT:-3306}" \
+             -u root -p"${FRAPPE_DB_PASSWORD}" \
+             --connect-timeout=10 --silent --skip-column-names \
+             -e "SELECT 1 FROM information_schema.tables
+                 WHERE table_schema = '${db_name}'
+                   AND table_name   = 'tabDocType'
+                 LIMIT 1;" 2>/dev/null | grep -q "1"; then
+        return 0
+    fi
+
+    echo "-> Site directory exists but database '${db_name}' is not initialized" >&2
+    return 1
+}
+
+if is_site_initialized; then
+    echo "-> Site ${RFP_DOMAIN_NAME} is already initialized (directory + database verified), skipping site creation"
 else
     echo "-> Create common site config with socketio_port"
     su frappe -c "cat > \"${SITES_DIR}/common_site_config.json\" << 'EOF'
