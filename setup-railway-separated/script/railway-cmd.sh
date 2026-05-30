@@ -6,15 +6,19 @@ if [ -z "$RFP_DOMAIN_NAME" ]; then
     exit 1
 fi
 
-SITE_CONFIG="/home/frappe/frappe-bench/sites/${RFP_DOMAIN_NAME}/site_config.json"
+SITES_DIR="/home/frappe/frappe-bench/sites"
 
-if [ ! -f "$SITE_CONFIG" ]; then
-    echo "-> Site config not found, running setup"
+if [ ! -d "${SITES_DIR}/${RFP_DOMAIN_NAME}" ]; then
+    echo "-> Site directory not found, running setup"
     /home/frappe/frappe-bench/railway-setup.sh
+else
+    echo "-> Site directory exists, ensuring HRMS is installed"
+    su frappe -c "bench get-app hrms https://github.com/frappe/hrms --branch version-16" 2>&1 || echo "HRMS app already exists or fetch failed"
+    su frappe -c "bench --site ${RFP_DOMAIN_NAME} install-app hrms" 2>&1 || echo "HRMS installation completed or already installed"
 fi
 
 echo "-> Clearing cache"
-su frappe -c "bench execute frappe.cache_manager.clear_global_cache"
+su frappe -c "cd /home/frappe/frappe-bench && bench --site ${RFP_DOMAIN_NAME} execute frappe.cache_manager.clear_global_cache"
 
 echo "-> Resolving paths"
 BENCH_PATH=$(su frappe -c "which bench")
@@ -30,3 +34,4 @@ nginx
 
 echo "-> Starting supervisor"
 /usr/bin/supervisord -c /home/frappe/supervisor.conf
+
