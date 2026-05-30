@@ -64,7 +64,14 @@ else
 EOF"
 
     echo "-> Create new site with ERPNext"
-    su frappe -c "bench new-site ${RFP_DOMAIN_NAME} --admin-password ${RFP_SITE_ADMIN_PASSWORD} --no-mariadb-socket --db-root-password ${FRAPPE_DB_PASSWORD} --install-app erpnext"
+    # Use --force if site directory exists but database is missing
+    if [ -d "${SITES_DIR}/${RFP_DOMAIN_NAME}" ]; then
+        echo "-> Site directory exists but database is missing, using --force to recreate"
+        su frappe -c "bench new-site ${RFP_DOMAIN_NAME} --admin-password ${RFP_SITE_ADMIN_PASSWORD} --no-mariadb-socket --db-root-password ${FRAPPE_DB_PASSWORD} --install-app erpnext --force"
+    else
+        su frappe -c "bench new-site ${RFP_DOMAIN_NAME} --admin-password ${RFP_SITE_ADMIN_PASSWORD} --no-mariadb-socket --db-root-password ${FRAPPE_DB_PASSWORD} --install-app erpnext"
+    fi
+    
     su frappe -c "bench --site ${RFP_DOMAIN_NAME} set-config socketio_port 9000"
     su frappe -c "bench use ${RFP_DOMAIN_NAME}"
 
