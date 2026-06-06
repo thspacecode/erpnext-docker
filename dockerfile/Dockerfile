@@ -72,7 +72,7 @@ RUN bench init \
 # COPY FILES
 ###############################################
 
-COPY --chown=frappe:frappe --chmod=0755 ./base/cmd /home/frappe/frappe-bench/cmd
+COPY --chown=frappe:frappe --chmod=0755 ./base/conf /home/frappe/frappe-bench/cmd
 
 ###############################################
 # FINALIZED
