@@ -102,5 +102,3 @@ jobs:
             ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:ALL-${{ env.IMAGE_VERSION_TAG }}
             ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:ALL-${{ matrix.app_branch }}-latest
           push: true
-          build-args: |
-            BASE_IMAGE=${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest
