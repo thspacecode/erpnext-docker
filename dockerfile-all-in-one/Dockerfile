@@ -7,7 +7,8 @@
 # * Dokploy preview deployment
 ###############################################
 
-FROM thspacecode/erpnext-docker:16-F12.2_E11.0
+ARG BASE_IMAGE=thspacecode/erpnext-docker:16-F12.2_E11.0
+FROM ${BASE_IMAGE}
 
 ###############################################
 # Add services missing from the base
