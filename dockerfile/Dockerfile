@@ -69,12 +69,6 @@ RUN bench init \
     echo "{}" > sites/common_site_config.json
 
 ###############################################
-# COPY FILES
-###############################################
-
-COPY --chown=frappe:frappe --chmod=0755 ./base/conf /home/frappe/frappe-bench/cmd
-
-###############################################
 # FINALIZED
 ###############################################
 
