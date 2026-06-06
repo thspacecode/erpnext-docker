@@ -93,3 +93,12 @@ jobs:
           docker tag ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION_TAG }}
           docker push ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION_TAG }}
           docker push ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest
+
+      - name: Build and push all-in-one image
+        uses: docker/build-push-action@v7
+        with:
+          context: "{{defaultContext}}:dockerfile-all-in-one"
+          tags: |
+            ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:ALL-${{ env.IMAGE_VERSION_TAG }}
+            ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:ALL-${{ matrix.app_branch }}-latest
+          push: true
