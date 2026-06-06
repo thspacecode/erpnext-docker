@@ -40,7 +40,8 @@ jobs:
       - name: Build and export to Docker
         uses: docker/build-push-action@v7
         with:
-          context: "{{defaultContext}}:dockerfile-bundled"
+          context: "{{defaultContext}}:dockerfile"
+          target: base
           tags: ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.app_branch }}-latest
           push: false
           load: true
@@ -97,8 +98,19 @@ jobs:
       - name: Build and push all-in-one image
         uses: docker/build-push-action@v7
         with:
-          context: "{{defaultContext}}:dockerfile-all-in-one"
+          context: "{{defaultContext}}:dockerfile"
+          target: all-in-one
           tags: |
             ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:ALL-${{ env.IMAGE_VERSION_TAG }}
             ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:ALL-${{ matrix.app_branch }}-latest
+          push: true
+
+      - name: Build and push pre-install image
+        uses: docker/build-push-action@v7
+        with:
+          context: "{{defaultContext}}:dockerfile"
+          target: pre-install
+          tags: |
+            ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:PRE-${{ env.IMAGE_VERSION_TAG }}
+            ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:PRE-${{ matrix.app_branch }}-latest
           push: true
