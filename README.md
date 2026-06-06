@@ -31,9 +31,11 @@ A single multi-stage [`dockerfile/Dockerfile`](dockerfile/Dockerfile) produces t
 | ------------- | -------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | `base`        | `version-16-latest`        | `frappe/build` + `bench init` + ERPNext, pre-baked                            | Builder stage for custom apps; the trial & dev Compose setups      |
 | `all-in-one`  | `ALL-version-16-latest`    | `base` + MariaDB, Redis, nginx, supervisor — site is created on **first boot** | Single-container trials, Railway (sleepable), Dokploy previews     |
-| `pre-install` | `PRE-version-16-latest`    | `all-in-one`, but the site + ERPNext are created at **build time**             | Demos/previews that must boot instantly with no first-run setup    |
+| `pre-install` | `PRE-version-16-latest`    | `all-in-one`, but the site + ERPNext are created at **build time**             | Demos, previews & agentic / ephemeral workflows (instant boot)    |
 
 Each variant also gets an immutable, version-pinned tag derived from the actual installed versions, e.g. `16-F<frappe>.<x>_E<erpnext>.<y>` (and the `ALL-` / `PRE-` prefixed equivalents).
+
+> **Tip — agentic & ephemeral workflows:** the `pre-install` image already contains a created site with ERPNext installed, so a container boots into a ready instance in seconds — no site creation or app install on first run. That makes it a great fit for agentic or CI pipelines that spin up a throwaway ERPNext on demand: the agent only has to `bench get-app` its custom app on top and start working.
 
 ---
 
@@ -78,13 +80,13 @@ Build any target from the `dockerfile/` directory with `--target`:
 cd dockerfile
 
 # Base (builder) image
-docker buildx build --target base        -t erpnext-docker:version-16-latest      .
+docker buildx build --target base -t erpnext-docker:version-16-latest .
 
 # All-in-one (DB + Redis + nginx + supervisor, site created on first boot)
-docker buildx build --target all-in-one  -t erpnext-docker:ALL-version-16-latest  .
+docker buildx build --target all-in-one -t erpnext-docker:ALL-version-16-latest .
 
 # Pre-install (site + ERPNext baked at build time)
-docker buildx build --target pre-install -t erpnext-docker:PRE-version-16-latest  .
+docker buildx build --target pre-install -t erpnext-docker:PRE-version-16-latest .
 ```
 
 The Frappe/ERPNext branch and repos are configurable via build args (`FRAPPE_BRANCH`, `FRAPPE_REPO`, `ERPNEXT_BRANCH`, `ERPNEXT_REPO`). The `pre-install` target additionally accepts `SITE_NAME`, `ADMIN_PASSWORD` and `DB_ROOT_PASSWORD`.
