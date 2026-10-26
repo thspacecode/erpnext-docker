@@ -112,6 +112,14 @@ RUN apt-get update \
     mariadb-client \
     && rm -rf /var/lib/apt/lists/*
 
+RUN set -e; \
+    echo "-- Hotfix | MariaDB User --"; \
+    # Keep socket auth and allow password auth for root@localhost as well as
+    # root@127.0.0.1, since loopback connections can resolve to localhost.
+    service mariadb start; \
+    trap 'mariadb-admin shutdown' EXIT; \
+    mariadb -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('admin');"
+
 ###############################################
 # COPY FILES
 ###############################################
