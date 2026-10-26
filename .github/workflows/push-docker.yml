@@ -54,6 +54,18 @@ jobs:
           push: false
           load: true
 
+      - name: Check pre-installed site ownership
+        run: |
+          docker run --rm --entrypoint bash \
+            ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:PRE-${{ matrix.app_branch }}-latest \
+            -euc '
+              getent group frappe
+              id -nG frappe | tr " " "\n" | grep -qx frappe
+              for file in /home/frappe/frappe-bench/sites/credentials.txt /home/frappe/.bench_initialized; do
+                test "$(stat -c %U:%G "$file")" = frappe:frappe
+              done
+            '
+
       - name: Start container
         run: |
           docker run -d --name action-test -p 8000:80 \
@@ -87,6 +99,14 @@ jobs:
             echo "Failed to receive a 200 response, got: $response"
             exit 1
           fi
+
+      - name: Check static assets and Socket.IO
+        run: |
+          curl --fail --silent --show-error --output /dev/null \
+            http://127.0.0.1:8000/assets/frappe/images/frappe-framework-logo.svg
+          curl --fail --silent --show-error --retry 12 --retry-delay 5 --retry-connrefused \
+            'http://127.0.0.1:8000/socket.io/?EIO=4&transport=polling' \
+            | grep -q '^0{'
 
       - name: Getting app version from image
         run: |

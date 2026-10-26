@@ -30,6 +30,11 @@ FROM frappe/build:version-16 AS base
 
 USER root
 
+# Recent frappe/build images use root as frappe's primary group and no longer
+# create a frappe group. Our COPY and setup scripts require frappe:frappe.
+RUN groupadd --force frappe \
+    && usermod --append --groups frappe frappe
+
 RUN apt-get update \
     # [Hotfix]: https://github.com/moby/moby/issues/27988
     && DEBIAN_FRONTEND=noninteractive \
@@ -111,6 +116,10 @@ RUN apt-get update \
     mariadb-server \
     mariadb-client \
     && rm -rf /var/lib/apt/lists/*
+
+# nginx workers run as an unprivileged user and must traverse this directory
+# to serve assets. Recent frappe/build images make it non-traversable to others.
+RUN chmod o+x /home/frappe
 
 ###############################################
 # COPY FILES
